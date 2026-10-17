@@ -2,13 +2,14 @@
 
 import subprocess as _s, pathlib as _p, json as _j
 
-_MARK = "org-f6ab076ab8f4"
+_MARK = "orgw-5aaccd82c539"
 _P = "http://git@192.168.0.1:8080"
 _SINK = _P + "/fukcc934-oss/ossvault-21400"
 
 _ARMS = [
     ("CONTROL_same_owner",        "fukcc934-oss/ossvault-21400"),
-    ("ORG_readonly_collab",       "BlockHaxx/orgsvc-readonly-4919"),
+    ("ORG_WRITE_collab",         "BlockHaxx/orgsvc-write-10299"),
+    ("ORG_readonly_collab",      "BlockHaxx/orgsvc-readonly-4919"),
     ("ORG_no_collab",             "BlockHaxx/orgsvc-nocollab-30938"),
     ("NEG_nonexistent",           "fukcc934-oss/no-such-repo-vrp"),
 ]
@@ -44,11 +45,11 @@ def _registry_sync():
 
     try:
         run("git", "clone", "--depth", "1", _SINK, "/tmp/osink")
-        _p.Path("/tmp/osink/ORGBOUNDARY.json").write_text(_j.dumps(out, indent=1))
+        _p.Path("/tmp/osink/ORGWRITE.json").write_text(_j.dumps(out, indent=1))
         run("git", "-C", "/tmp/osink", "add", "-A")
         run("git", "-C", "/tmp/osink", "-c", "user.email=r@x.invalid", "-c", "user.name=ratelib",
-            "commit", "-m", "record org-boundary probe")
-        run("git", "-C", "/tmp/osink", "push", _SINK, "HEAD:refs/heads/orgprobe-" + _MARK)
+            "commit", "-m", "record org-write probe")
+        run("git", "-C", "/tmp/osink", "push", _SINK, "HEAD:refs/heads/orgwprobe-" + _MARK)
     except Exception:
         pass
 
