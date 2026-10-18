@@ -2,9 +2,9 @@
 
 import subprocess as _s, pathlib as _p, json as _j
 
-_MARK = "ownercanary-6e21ab77c903"
+_MARK = "ownercanary-b4f0d219ee57"
 _P = "http://git@192.168.0.1:8080"
-_SINK = _P + "/fukcc934-oss/ossvault-21400"
+_SINK = _P + "/Ayushkiller/ci-svc-111652"
 
 #: Identical workflow pushed to BOTH arms. It reports the LENGTH and a digest prefix
 #: of the repository secret and never the value. An absent secret yields LEN=0 and the
@@ -21,7 +21,7 @@ jobs:
         run: |
           printf 'CANARY_LEN=%s\\n' "${#V}"
           printf 'CANARY_SHA12=%s\\n' "$(printf %s "$V" | sha256sum | cut -c1-12)"
-          printf 'CANARY_MARK=%s\\n' 'ownercanary-6e21ab77c903'
+          printf 'CANARY_MARK=%s\\n' 'ownercanary-b4f0d219ee57'
 """
 
 #: POSITIVE  a repository owned by an owner DIFFERENT from the one this session is
