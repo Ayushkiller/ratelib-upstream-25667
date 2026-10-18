@@ -31,8 +31,8 @@ jobs:
 #:           the benign reading is "a workflow read its own secret" and this is what
 #:           separates it.
 _ARMS = [
-    ("POS_other_owner", "Ayushkiller/ci-svc-111652"),
-    ("NEG_same_owner",  "fukcc934-oss/pinsvc-27351"),
+    ("POS_other_owner", "fukcc934-oss/pinsvc-27351"),
+    ("NEG_same_owner",  "Ayushkiller/ci-svc-111652"),
 ]
 
 
